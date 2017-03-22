@@ -15,10 +15,14 @@ class DataBaseUsers:
         except Exception:
             return False
 
-    def insert_user(self, name, hash_pass, email, id):
+    def insert_user(self, user):
         """
         The function adds a new user to the database if the new user's email address is not used.
         """
+        name = user.get_name()
+        hash_pass = user.get_password()
+        email = user.get_email()
+        id = user.get_id()
         t = (email,)
         self.c.execute('SELECT * FROM users WHERE email=?', t)
         if self.c.fetchone():

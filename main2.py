@@ -1,19 +1,9 @@
 __author__ = 'Tamir'
 import random
-from flask import flash
-from flask import request
-from flask import abort
-from flask import redirect
 from flask import Flask
-from flask import send_file
-from flask import render_template
-from flask import request
-from flask_Login import *
-from flask_wtf import *
-from wtforms import *
-from flask import url_for
-#LoginManager, UserMixin, login_required
-
+from flask import send_file, render_template, request, url_for, Response, redirect, session, abort
+from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, login_url
+from User import *
 OK = "OK - 200"
 UPDATE_ROUTE = "/update"
 TEXT_EDITOR_ROUTE = "/text_editor"
@@ -26,39 +16,63 @@ METHOD_POST = "POST"
 STATIC_PATH = "/static/"
 
 app = Flask(__name__)
-login_manager = LoginManager()
-login_manager.init_app(app)
 
 
 @app.route(HOMEPAGE_ROUTE)
-@app.route(USER_ROUTE)
+@login_required
 def homepage(user=None, var=random.randint(0, 1000)):
     return render_template("index.html", user=user, var=var)
 
 #----------------------------------------------------------------------------
 
+# config
+app.config.update(
+    DEBUG=False,
+    SECRET_KEY='secret_xxx'
+)
 
-@app.route('/login', methods=['GET', 'POST'])
-def login():
-    # Here we use a class of some kind to represent and validate our
-    # client-side form data. For example, WTForms is a library that will
-    # handle this for us, and we use a custom LoginForm to validate.
-    form = LoginForm()
-    if form.validate_on_submit():
-        # Login and validate the user.
-        # user should be an instance of your `User` class
-        login_user(user)
+# flask-login
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = "login"
 
-        flash('Logged in successfully.')
 
-        next = request.args.get('next')
-        # is_safe_url should check if the url is safe for redirects.
-        # See http://flask.pocoo.org/snippets/62/ for an example.
-        if not is_safe_url(next):
-            return abort(400)
+# somewhere to login
+@app.route("/login", methods=["GET", "POST"])
+def login(var=random.randint(0, 1000)):
+    if request.method == 'POST':
+        username = request.form['username']
+        password = request.form['password']
+        if password == username + "_secret":
+            id = username.split('user')[1]
+            user = User(id)
+            login_user(user)
+            return redirect(request.args.get("next"))
+        else:
+            return abort(401)
+    else:
+        return render_template("login_page.html", var=var)
 
-        return redirect(next or url_for('index'))
-    return render_template('login.html', form=form)
+
+# somewhere to logout
+@app.route("/logout")
+@login_required
+def logout():
+    logout_user()
+    return Response('<p>Logged out</p>')
+
+
+# handle login failed
+@app.errorhandler(401)
+def page_not_found(e):
+    return Response('<p>Login failed</p>')
+
+
+# callback to reload the user object
+@login_manager.user_loader
+def load_user(userid):
+    return User(userid)
+
 #----------------------------------------------------------------------------
 
 @app.route('/get_image/<image_name>')
