@@ -4,7 +4,8 @@ from flask import Flask
 from flask import send_file, render_template, request, url_for, Response, redirect, session, abort, g
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, login_url
 from User import *
-
+from DataBaseUsers import *
+data_base = DataBaseUsers()
 g = ""
 OK = "OK - 200"
 UPDATE_ROUTE = "/update"
@@ -38,23 +39,22 @@ login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = "login"
 
-
+#----------------------------------------------------------------------------
 # somewhere to login
 @app.route("/login", methods=["GET", "POST"])
 def login(var=random.randint(0, 1000)):
-    password = ""
-    email = ""
     print "yessssss"
     if request.method == 'POST':
-        print "wtfffffffffffff"
         email = request.form['email']
         print email
         password = request.form['password']
         print password
-        if password == email + "_secret":
-            user = User(2)
+
+        if data_base.authenticate(email, password):
+            user = data_base.get_user_by_email(email)
             login_user(user)
-            return redirect()
+            print "you are in"
+            return redirect("/")
         else:
             return abort(401)
     else:
@@ -79,8 +79,9 @@ def page_not_found(e):
 
 # callback to reload the user object
 @login_manager.user_loader
-def load_user(userid):
-    return User(userid)
+def load_user(id):
+    print id
+    return data_base.get_user_by_id(id)
 
 #----------------------------------------------------------------------------
 
