@@ -1,9 +1,11 @@
 __author__ = 'Tamir'
 import random
 from flask import Flask
-from flask import send_file, render_template, request, url_for, Response, redirect, session, abort
+from flask import send_file, render_template, request, url_for, Response, redirect, session, abort, g
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, login_url
 from User import *
+
+g = ""
 OK = "OK - 200"
 UPDATE_ROUTE = "/update"
 TEXT_EDITOR_ROUTE = "/text_editor"
@@ -40,17 +42,24 @@ login_manager.login_view = "login"
 # somewhere to login
 @app.route("/login", methods=["GET", "POST"])
 def login(var=random.randint(0, 1000)):
+    password = ""
+    email = ""
+    print "yessssss"
     if request.method == 'POST':
-        username = request.form['username']
+        print "wtfffffffffffff"
+        email = request.form['email']
+        print email
         password = request.form['password']
-        if password == username + "_secret":
-            id = username.split('user')[1]
-            user = User(id)
+        print password
+        if password == email + "_secret":
+            user = User(2)
             login_user(user)
-            return redirect(request.args.get("next"))
+            return redirect()
         else:
             return abort(401)
     else:
+        print "ok"
+        g = request.args.get("next")
         return render_template("login_page.html", var=var)
 
 
