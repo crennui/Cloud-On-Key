@@ -5,6 +5,12 @@ from flask import send_file, render_template, request, url_for, Response, redire
 from flask_login import LoginManager, UserMixin, login_required, login_user, logout_user, login_url
 from User import *
 from DataBaseUsers import *
+from OpenSSL import SSL
+
+#context = SSL.Context(SSL.SSLv23_METHOD)
+#context.use_privatekey_file('yourserver.key')
+#context.use_certificate_file('yourserver.crt')
+
 data_base = DataBaseUsers()
 g = ""
 OK = "OK - 200"
@@ -67,7 +73,8 @@ def login(var=random.randint(0, 1000)):
 @app.route("/logout")
 @login_required
 def logout():
-    logout_user()
+    if logout_user():
+        print "ok I am out"
     return Response('<p>Logged out</p>')
 
 
@@ -122,6 +129,8 @@ def files(var=random.randint(0, 1000)):
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0')
+
+#ssl_context=context
 
 
 
