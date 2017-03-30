@@ -4,21 +4,8 @@
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 	<title>Text editor</title>
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style2.css')}}?v={{ var }}">
+	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style_test.css')}}?v={{ var }}">
 	<center><h1>Text Editor</h1></center>
-    <script>src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-	<script type="text/javascript">
-	function sendUpdate()
-	  {
-	  var textArea = document.getElementById('my_text');
-	  var text = textArea.value;
-	  var ourRequest = new XMLHttpRequest();
-	  var params = text;
-	  ourRequest.open('POST','/update',true)
-	  ourRequest.send(params);
-	  }
-
-</script>
 </head>
 <body>
     <center>
@@ -32,6 +19,8 @@
 	<textarea oninput="sendUpdate()" cols="80" rows="50" type="text" class="text_edit" id="my_text">"{{ data }}"</textarea>
 	<br />
     </center>
+<script>src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='text_editor.js') }}"></script>
 </body>
 </html>
 

@@ -13,7 +13,7 @@ TEXT_EDITOR_ROUTE = "/text_editor"
 USER_ROUTE = "/<user>"
 HOMEPAGE_ROUTE = "/"
 FILES_ROUTE = "/files"
-TEXT_EDITOR_PATH = "text_editor_v2.0.html"
+TEXT_EDITOR_PATH = "text_editor.html"
 SHADOW_FILE_PATH = "shadow.txt"
 METHOD_POST = "POST"
 STATIC_PATH = "/static/"
@@ -91,7 +91,8 @@ def get_image(image_name=None):
 
 
 @app.route(TEXT_EDITOR_ROUTE)
-def text_editor(data=None, var=random.randint(0, 1000)):
+def text_editor(data="", var=random.randint(0, 1000)):
+    print "editor"
     return render_template(TEXT_EDITOR_PATH, data=data, var=var)
 
 

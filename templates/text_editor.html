@@ -1,68 +1,29 @@
-<!DOCTYPE HTML>
-
+<!DOCTYPE html>
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Text editor</title>
-	<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='style2.css')}}?v={{ var }}">
-	<center><h1>Text Editor</h1></center>
-    <script>src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
-	<script type="text/javascript">
-
-		function mod_selection (val1,val2) {
-			// Get the text area
-			var textArea = document.getElementById('my_text');
-
-			// IE specific code.
-			if( -1 != navigator.userAgent.indexOf ("MSIE") ) {
-
-				var range = document.selection.createRange();
-				var stored_range = range.duplicate();
-
-				if(stored_range.length > 0) {
-					stored_range.moveToElementText(textArea);
-					stored_range.setEndPoint('EndToEnd', range);
-					textArea.selectionstart = stored_range.text.length - range.text.length;
-					textArea.selectionend = textArea.selectionstart + range.text.length;
-				}
-			}
-			// Do we even have a selection?
-			if (typeof(textArea.selectionstart) != "undefined") {
-				// Split the text in three pieces - the selection, and what comes before and after.
-				var begin = textArea.value.substr(0, textArea.selectionstart);
-				var selection = textArea.value.substr(textArea.selectionstart, textArea.selectionend - textArea.selectionstart);
-				var end = textArea.value.substr(textArea.selectionend);
-
-				// Insert the tags between the three pieces of text.
-				textArea.value = begin + val1 + selection + val2 + end;
-			}
-		}
-
-
-
-	function sendUpdate()
-	  {
-	  var textArea = document.getElementById('my_text');
-	  var text = textArea.value;
-	  var ourRequest = new XMLHttpRequest();
-	  var params = text;
-	  ourRequest.open('POST','/update',true)
-	  ourRequest.send(params);
-	  }
-
-//    $(document).ready(function(){
-//       $("textarea").keyup(function(){
-//        var txt = $("textarea").val();
-//       $.post("127.0.0.1", {value: txt}, function(){
-//            $("span").html(txt);
-//        });
-//    });
-//});
-
-
-</script>
+    <meta charset="UTF-8">
+    <link href="https://fonts.googleapis.com/css?family=Lato" rel="stylesheet">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/style_test.css')}}?v={{ var }}">
+    <title>Text editor</title>
 </head>
 <body>
+
+<header>
+    <div class="wrapper">
+        <img src="/static/cloud_key.png" height="120" width="120">
+        <h1>Cloud On Key</h1>
+        <nav>
+            <ul>
+                <li><a href="/">HOME</a></li>
+                <li><a href="files_view_2.html">FILES</a></li>
+                <li><a href="forum.html">FORUM</a></li>
+                <li><a href="contact.html">CONTACT</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
+
+<section>
     <center>
 	<!-- Knapper -->
 	<input type="button" value="B" onclick="mod_selection('<b>','</b>')" />
@@ -71,15 +32,26 @@
 	<br />
 
 	<!-- Text area -->
-	<textarea oninput="sendUpdate()" type="text" class="text_edit" id="my_text"></textarea>
-	<br />
-	<!-- Submit button -->
-	<input type="button" value="Show text" onclick="" />
-    </center>
-	<!-- Empty div to put the text in -->
-	<div id="view_text">
-	</div>
+	<textarea oninput="sendUpdate()" cols="80" rows="50" type="text" class="text_edit" id="my_text">"{{ data }}"</textarea>
 
+	<br />
+    </center>
+</section>
+
+
+<footer>
+    <div class="wrapper">
+        <nav>
+         <ul>
+            <li><a href="/">HOME</a></li>
+            <li><a href="files_view_2.html">FILES</a></li>
+            <li><a href="forum.html">FORUM</a></li>
+            <li><a href="contact.html">CONTACT</a></li>
+            </ul>
+        </nav>
+    </div>
+</footer>
+<script>src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='text_editor.js') }}"></script>
 </body>
 </html>
-
