@@ -6,11 +6,11 @@
     <link href='http://fonts.googleapis.com/css?family=Titillium+Web:400,300,600' rel='stylesheet' type='text/css'>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/5.0.0/normalize.min.css" rel="stylesheet">
     <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/style_test.css')}}?v={{ var }}">
-    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/style_test_2.css')}}?v={{ var }}">
+    <!--<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='stylesheets/style_test_2.css')}}?v={{ var }}"> -->
     <title>login_page</title>
 </head>
 <body>
-
+<div class="background-color-lip">
 <header>
     <div class="wrapper">
         <img src="/static/cloud_key.png" height="120" width="120">
@@ -18,9 +18,9 @@
         <nav>
             <ul>
                 <li><a href="/">HOME</a></li>
-                <li><a href="files_view_2.html">FILES</a></li>
-                <li><a href="forum.html">FORUM</a></li>
-                <li><a href="contact.html">CONTACT</a></li>
+                <li><a href="/files">FILES</a></li>
+                <li><a href="/forum">FORUM</a></li>
+                <li><a href="/contact">CONTACT</a></li>
             </ul>
         </nav>
     </div>
@@ -28,7 +28,9 @@
 
 <section>
    <div class="form">
-
+        {% if error == "you are logged out" %}
+               <h2>{{ error }}</h2>
+        {% endif %}
       <ul class="tab-group">
         <li class="tab active"><a href="#signup">Sign Up</a></li>
         <li class="tab"><a href="#login">Log In</a></li>
@@ -38,7 +40,7 @@
         <div id="signup">
           <h1>Sign Up for Free</h1>
 
-          <form action="127.0.0.1" method="POST">
+          <form action="/register" method="POST">
 
           <div class="top-row">
             <div class="field-wrap">
@@ -78,6 +80,9 @@
 
         <div id="login">
           <h1>Welcome Back!</h1>
+          {% if error and error !="you are logged out" %}
+                <h2>{{ error }}</h2>
+          {% endif %}
 
           <form action="/login" method="POST">
 
@@ -106,6 +111,8 @@
       </div><!-- tab-content -->
 
 </div> <!-- /form -->
+
+
 </section>
 
 
@@ -114,13 +121,14 @@
         <nav>
          <ul>
             <li><a href="/">HOME</a></li>
-            <li><a href="files_view_2.html">FILES</a></li>
-            <li><a href="forum.html">FORUM</a></li>
-            <li><a href="contact.html">CONTACT</a></li>
+            <li><a href="/files">FILES</a></li>
+            <li><a href="/forum">FORUM</a></li>
+            <li><a href="/contact">CONTACT</a></li>
             </ul>
         </nav>
     </div>
 </footer>
+</div>
     <script src='http://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.3/jquery.min.js'></script>
     <script type="text/javascript" src="{{ url_for('static', filename='index.js') }}"></script>
 </body>

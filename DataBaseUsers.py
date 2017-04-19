@@ -54,20 +54,28 @@ class DataBaseUsers():
     def get_user_by_email(self, email):
         user_line = self.c.execute("SELECT * FROM users WHERE email=?", (email,)).fetchall()
         if user_line:
-            print user_line
             return User(user_line[0][0], user_line[0][1], user_line[0][2], user_line[0][3])
 
     def get_user_by_id(self, id):
         user_line = self.c.execute("SELECT * FROM users WHERE id=?", (id,)).fetchall()
         if user_line:
-            print user_line
             return User(user_line[0][0], user_line[0][1], user_line[0][2], user_line[0][3])
+
+    def get_users_id(self):
+        return self.c.execute("SELECT id FROM users").fetchall()
+
+    def check_email(self, email):
+        t = (email,)
+        if self.c.execute("SELECT * FROM users WHERE email=?", t).fetchall():
+            return False
+        return True
 
 if __name__ == "__main__":
     db = DataBaseUsers()
+    b= """
     db.delete_table()
     db.create_table()
-    db.insert_user(User("Tamir", "1234", "cren@g", "33"))
+    db.insert_user(User("Tamir", "1234", "cren@g", "33"))"""
     db.print_table()
 
     a="""c.execute("DROP table if exists users")
