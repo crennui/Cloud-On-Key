@@ -5,8 +5,9 @@ from flask import send_file, render_template, request, url_for, Response, redire
 from flask_login import LoginManager, login_required, login_user, logout_user, login_url
 from DataBaseUsers import *
 from DataBaseFiles import *
-from flask_socketio import SocketIO, send, emit
-
+from flask_socketio import SocketIO, emit, send
+import sqlite3
+from flask_bcrypt import Bcrypt
 #from OpenSSL import SSL
 
 #context = SSL.Context(SSL.SSLv23_METHOD)
@@ -57,10 +58,12 @@ HTML_FILE_TEMPLATE = """ <a href="/file_request/%s">
                             </div></a>"""
 #----------------------------------------------------------------------------
 app = Flask(__name__)
+bcrypt = Bcrypt(app)
 #-------------------------------------SocketIO----------------------------------
 app.config['SECRET_KEY'] = SECRET_KEY
 socket = SocketIO(app)
 #----------------------------------------------------------------------------
+rooms = {}
 
 
 @app.route(HOMEPAGE_ROUTE)
@@ -165,9 +168,8 @@ def load_user(id):
 #--------------------------------FILES AND EDITOR-------------------------------------------
 
 
-@app.route("/create_file")
-def create_file():
-    file_name = request.args.get('name')
+@socket.on("create_file")
+def create_file(file_name):
     if not file_name in data_base_files.get_user_files_list(session[USER_ID]):
         data_base_files.insert_file(session[USER_ID], file_name)
         socket.emit('file_created', get_new_file_html_template(file_name))

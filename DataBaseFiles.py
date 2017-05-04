@@ -107,7 +107,7 @@ class DataBaseFiles():
 
 if __name__ == "__main__":
     db = DataBaseFiles()
-    db.delete_file("hi.txt")
+    #db.add_permission("33", "hello.txt", "j154.txt", "r", "36")
     db.print_table()
 
     a="""c.execute("DROP table if exists users")

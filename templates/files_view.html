@@ -40,7 +40,7 @@
             {%for file_name in files_list%}
             <a href={{"/file_request/"+file_name}}>
             <div class="img-single">
-                <img src="static/document_file_icon_2.png">
+                <img src="static/document_file_icon_2.png" id="{{ file_name }}" >
                 <h3>{{ file_name }}</h3>
             </div></a>
             {% endfor %}
@@ -51,13 +51,13 @@
 <nav id="context-menu" class="context-menu">
     <ul class="context-menu__items">
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="View"><i class="fa fa-eye"></i> View Task</a>
+        <a href="" class="context-menu__link" data-action="View"><i class="fa fa-eye"></i> View File</a>
       </li>
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="Edit"><i class="fa fa-edit"></i> Edit Task</a>
+        <a href="#" class="context-menu__link" data-action="Edit"><i class="fa fa-edit"></i> Share File</a>
       </li>
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="Delete"><i class="fa fa-times"></i> Delete Task</a>
+        <a href="#" class="context-menu__link" data-action="Delete"><i class="fa fa-times"></i> Delete File</a>
       </li>
     </ul>
 </nav>
@@ -77,5 +77,6 @@
     </div>
 </footer>
 </body>
+<script type="text/javascript" src="{{ url_for('static', filename='right-click.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='socketio-update.js') }}"></script>
 </html>
