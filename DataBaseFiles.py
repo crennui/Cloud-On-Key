@@ -7,7 +7,7 @@ import win32com.client
 import mammoth
 
 #------------------------------CONSTANTS---------------------------------------
-FILES_PATH = "C:/CyberProjects/cloud_on_key/Cloud-On-Key/files/"
+FILES_PATH = "D:/Cloud-On-Key/files/"
 UPLOADS = "C:/CyberProjects/cloud_on_key/Cloud-On-Key/uploads/"
 CREATE_PERMISSIONS = '''CREATE TABLE permissions
  (user_id TEXT, user_file_name TEXT ,server_file_name TEXT, permission_type TEXT, owner TEXT)'''

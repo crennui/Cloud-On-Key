@@ -221,22 +221,11 @@ socket.on('message',function(msg){
     console.log( "ID - " + idOfImg + ", Task action - " + link.getAttribute("data-action"));
 	console.log(link.getAttribute("data-action"));
 	if (new String(link.getAttribute("data-action")).valueOf()== new String(("download_file")).valueOf())
-	  {/*
-		  console.log("yes");
-		  var ourRequest = new XMLHttpRequest();
-		  var url = 'http://127.0.0.1:5000/download/'+idOfImg;
-		  console.log(url);
-		  ourRequest.open('GET',url,true);
-		  ourRequest.responseType = "arraybuffer";
-		  ourRequest.onload = function(oEvent){
-			  var arrayBuffer = ourRequest.response; 
-			  if (arrayBuffer)
-		  }
-	      ourRequest.send();
-	 */ }
-	  
-	socket.emit(link.getAttribute("data-action"),idOfImg);
-    toggleMenuOff();
+	  {
+		 var win = window.open("http://127.0.0.1:5000/download?file_name="+idOfImg, '_blank');
+	  }
+	  else{socket.emit(link.getAttribute("data-action"),idOfImg);}
+	  toggleMenuOff();
   }
   
   /**

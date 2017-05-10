@@ -12,7 +12,7 @@
 <li style="text-align: left;"><span style="background-color: #ffffff;">hgjk</span></li>
 <li style="text-align: left;"><span style="background-color: #ffffff;">hg</span></li>
 <li style="text-align: left;"><span style="background-color: #ffffff;">khgj</span></li>
-<li style="text-align: left;"><span style="background-color: #ffffff;">kgh<iframe src="//www.youtube.com/embed/FKwicZF7xNE" width="560" height="314" allowfullscreen="allowfullscreen"></iframe></span></li>
+<li style="text-align: left;"><span style="background-color: #ffffff;">kgh</span></li>
 </ol>
 </body>
 </html>

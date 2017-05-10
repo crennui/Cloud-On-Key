@@ -181,9 +181,46 @@ def load_user(id):
 #--------------------------------FILES AND EDITOR-------------------------------------------
 
 
-@app.route('/download/<path:user_file_name>', methods=['GET', 'POST'])
-def download(user_file_name):
+@socket.on('download_file')
+def download_file(file_name):
+    new_file_name = file_name.replace(".txt", ".docx")
+    print new_file_name
     uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
+    print uploads
+    return send_from_directory(uploads, new_file_name, as_attachment=True)
+    #return send_file("files/"+id, attachment_filename=id, as_attachment=True, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+
+@socket.on('down_img')
+def down(file_name):
+    uploads = os.path.join(app.root_path, "static")
+    print "madaraaaaaaa"
+    #return send_from_directory(uploads, file_name, as_attachment=True)
+    return redirect("/down_img/"+file_name)
+
+
+@app.route("/down_img/<file_name>")
+def send_img(file_name):
+    uploads = os.path.join(app.root_path, "static")
+    return send_from_directory(uploads, file_name, as_attachment=True)
+
+
+@app.route("/omg")
+def send_f():
+    print "blaaaaaaa"
+    uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
+    new_file_name = request.args.get("file_name")
+    print new_file_name
+    print uploads
+    return send_from_directory(uploads, request.args.get("file_name"))
+
+
+@app.route('/download', methods=['GET', 'POST'])
+def download():
+    print "kakakakakakakkaakakak"
+    uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
+    print uploads
+    user_file_name = request.args.get("file_name")
     file_name = data_base_files.user_to_server_file_name_owned(user_file_name, session[USER_ID])[0]
     if not file_name:
         file_name = data_base_files.user_to_server_file_name_not_owned(user_file_name, session[USER_ID])[0]
@@ -191,21 +228,10 @@ def download(user_file_name):
         data_base_files.html_to_word(file_name, user_file_name)
         new_file_name = user_file_name.split(".")[0]+".docx"
         print new_file_name
+        #return render_template(HOMEPAGE_PATH)
         return send_from_directory(directory=uploads, filename=new_file_name)
     #else:
      #   return ERROR_404
-
-
-@socket.on('download_file')
-def d_f(id):
-    id = id.replace(".txt", ".docx")
-    print id
-    return send_file("files/"+id, attachment_filename=id, as_attachment=True, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-
-
-@app.route("/omg")
-def send_f():
-    return send_file("C:/CyberProjects/cloud_on_key/Cloud-On-Key/files/"+request.args.get("file_name"), attachment_filename=request.args.get("file_name"))
 
 
 @socket.on(CREATE_FILE)
@@ -287,14 +313,13 @@ def delete_file(file_name):
     msg = DELETED % file_name
     data_base_files.delete_file(user_to_server_file_name(file_name), session[USER_ID])
     socket.emit('file-deleted', file_name)
-    socket.emit(POPUP_MSG, msg)
+    socket.emit(POPUP_MSG, msg, room=session[USER_NAMESPACE])
     return OK
 
 
 @socket.on('joined')
 def joined():
     room = session[USER_NAMESPACE]
-    print room
     join_room(room)
 
 
