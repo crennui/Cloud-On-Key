@@ -28,19 +28,22 @@
 </header>
 
 <section>
-    <center>
+  <div class="wrapper">
+      <center>
     <img id ="create-file" src="/static/create_file2.png" onclick="getFileName()" height="64" width="64" alt="add new file">
      <div class="popup">
-       <span class="popuptext" id="myPopup">The file name is already used !</span>
+       <span class="popuptext" id="myPopup"></span>
       </div>
-    </center>
+          </center>
+  </div>
+
 
     <div class="files-box">
         <div class="wrapper" id="files-view">
             {%for file_name in files_list%}
             <a href={{"/file_request/"+file_name}}>
-            <div class="img-single">
-                <img src="static/document_file_icon_2.png" id="{{ file_name }}" >
+            <div class="img-single" id="{{ file_name }}">
+                <img src="static/document_file_icon_2.png">
                 <h3>{{ file_name }}</h3>
             </div></a>
             {% endfor %}
@@ -51,10 +54,10 @@
 <nav id="context-menu" class="context-menu">
     <ul class="context-menu__items">
       <li class="context-menu__item">
-        <a href="" class="context-menu__link" data-action="View"><i class="fa fa-eye"></i> View File</a>
+        <a href="#" class="context-menu__link" data-action="download_file"><i class="fa fa-eye"></i> Download File</a>
       </li>
       <li class="context-menu__item">
-        <a href="#" class="context-menu__link" data-action="Edit"><i class="fa fa-edit"></i> Share File</a>
+        <a href="#" class="context-menu__link" data-action="Share"><i class="fa fa-edit"></i> Share File</a>
       </li>
       <li class="context-menu__item">
         <a href="#" class="context-menu__link" data-action="Delete"><i class="fa fa-times"></i> Delete File</a>
@@ -77,6 +80,6 @@
     </div>
 </footer>
 </body>
-<script type="text/javascript" src="{{ url_for('static', filename='right-click.js') }}"></script>
 <script type="text/javascript" src="{{ url_for('static', filename='socketio-update.js') }}"></script>
+<script type="text/javascript" src="{{ url_for('static', filename='right-click.js') }}"></script>
 </html>

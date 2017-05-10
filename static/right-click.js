@@ -1,4 +1,6 @@
-
+socket.on('message',function(msg){
+	console.log(msg);
+});
 (function() {
   
   "use strict";
@@ -20,11 +22,7 @@
    * @return {Boolean}
    */
   function clickInsideElement( e, className ) {
-	  console.log("inside element");
     var el = e.srcElement || e.target;
-    console.log(el)
-	console.log(el.classList)
-	console.log(className)
     if ( el.classList.contains(className) ) {
       return el;
     } else {
@@ -97,7 +95,7 @@
 
   var windowWidth;
   var windowHeight;
-
+  var idOfImg; 
   /**
    * Initialise our application's code.
    */
@@ -113,10 +111,9 @@
    */
   function contextListener() {
     document.addEventListener( "contextmenu", function(e) {
-		console.log(e)
       taskItemInContext = clickInsideElement( e, taskItemClassName );
-		console.log(taskItemInContext);
       if ( taskItemInContext ) {
+		idOfImg = taskItemInContext.getAttribute("id");
         e.preventDefault();
         toggleMenuOn();
         positionMenu(e);
@@ -221,10 +218,27 @@
    * @param {HTMLElement} link The link that was clicked
    */
   function menuItemListener( link ) {
-    console.log( "Task ID - " + taskItemInContext.getAttribute("data-id") + ", Task action - " + link.getAttribute("data-action"));
+    console.log( "ID - " + idOfImg + ", Task action - " + link.getAttribute("data-action"));
+	console.log(link.getAttribute("data-action"));
+	if (new String(link.getAttribute("data-action")).valueOf()== new String(("download_file")).valueOf())
+	  {/*
+		  console.log("yes");
+		  var ourRequest = new XMLHttpRequest();
+		  var url = 'http://127.0.0.1:5000/download/'+idOfImg;
+		  console.log(url);
+		  ourRequest.open('GET',url,true);
+		  ourRequest.responseType = "arraybuffer";
+		  ourRequest.onload = function(oEvent){
+			  var arrayBuffer = ourRequest.response; 
+			  if (arrayBuffer)
+		  }
+	      ourRequest.send();
+	 */ }
+	  
+	socket.emit(link.getAttribute("data-action"),idOfImg);
     toggleMenuOff();
   }
-
+  
   /**
    * Run the app.
    */

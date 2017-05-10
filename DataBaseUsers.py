@@ -70,6 +70,11 @@ class DataBaseUsers():
             return False
         return True
 
+    def get_username_by_id(self, id_to_search):
+        username = self.c.execute("SELECT name FROM users WHERE id=?", (id_to_search,)).fetchone()
+        if username:
+            return username[0]
+
 if __name__ == "__main__":
     db = DataBaseUsers()
     b= """

@@ -1,8 +1,17 @@
+#---------------------------------IMPORTS-------------------------------------
 import random
 import sqlite3
 from string import letters
+import os
+import win32com.client
+import mammoth
+
+#------------------------------CONSTANTS---------------------------------------
+FILES_PATH = "C:/CyberProjects/cloud_on_key/Cloud-On-Key/files/"
+UPLOADS = "C:/CyberProjects/cloud_on_key/Cloud-On-Key/uploads/"
 CREATE_PERMISSIONS = '''CREATE TABLE permissions
  (user_id TEXT, user_file_name TEXT ,server_file_name TEXT, permission_type TEXT, owner TEXT)'''
+#-------------------------------------------------------------------------
 
 
 class DataBaseFiles():
@@ -36,7 +45,7 @@ class DataBaseFiles():
         self.c.execute("INSERT INTO permissions VALUES(?,?,?,?,?)", t)
         self.conn.commit()
 
-    def insert_file(self, owner, user_file_name):
+    def insert_file(self, owner, user_file_name, data=""):
         """
         The function adds a new file to the database, if the user_file_name is already used the
         function return false.
@@ -48,6 +57,7 @@ class DataBaseFiles():
             self.c.execute("INSERT INTO files VALUES (?,?,?)", t)
             self.conn.commit()
             f = open("files/"+server_file_name, "w")
+            f.write(data)
             f.close()
             return True
         except Exception:
@@ -58,13 +68,19 @@ class DataBaseFiles():
         data = self.c.fetchall()
         print data
 
-    def delete_table(self):
+    def delete_files_table(self):
+        self.c.execute("DROP table if exists files")
+        self.conn.commit()
+
+    def delete_permission_table(self):
         self.c.execute("DROP table if exists permissions")
         self.conn.commit()
 
-    def delete_file(self, user_file_name):
-        t = (user_file_name,)
-        self.c.execute('DELETE FROM files WHERE user_file_name=?', t)
+    def delete_file(self, server_file_name, user_id):
+        t = (server_file_name, user_id)
+        self.c.execute('DELETE FROM files WHERE server_file_name=? AND owner=?', t)
+        self.c.execute('DELETE FROM permissions WHERE server_file_name=? AND user_id=?', t)
+        os.remove(FILES_PATH+server_file_name)
         self.conn.commit()
         return True
 
@@ -92,6 +108,10 @@ class DataBaseFiles():
         return server_file_name
 
     def get_user_files_list(self, user_id):
+        """
+        returns a list of the user_file_name of all the files with the user
+        owned or shared with.
+        """
         t = (user_id, )
         list_of_files = self.c.execute("SELECT * FROM files WHERE owner=?", t).fetchall()
         list_of_files_not_owned = self.c.execute("SELECT * FROM permissions WHERE user_id=?", t).fetchall()
@@ -105,11 +125,40 @@ class DataBaseFiles():
         t = (user_file_name, user_id)
         return self.c.execute("SELECT server_file_name FROM permissions WHERE user_file_name=? AND user_id=?", t).fetchone()
 
-if __name__ == "__main__":
+    def html_to_word(self, server_file_name, user_file_name):
+        word = win32com.client.Dispatch('Word.Application')
+        doc = word.Documents.Add(FILES_PATH+server_file_name)
+        doc.SaveAs2(FILES_PATH+user_file_name.split(".")[0]+'.docx', FileFormat=12)
+        doc.Close()
+        word.Quit()
+        return True
+
+    def word_to_html(self, owner, new_file_name):
+        with open(UPLOADS+new_file_name, "rb") as docx_file:
+            result = mammoth.convert_to_html(docx_file)
+        html = result.value
+        #messages = result.messages
+        end_with = ".txt"
+        file_end = new_file_name.split(".")[1]
+        if file_end != ".docx":
+            end_with = file_end
+        self.insert_file(owner, new_file_name.split(".")[0]+end_with)
+        print html
+
+
+def reset_tables():
     db = DataBaseFiles()
+    db.delete_files_table()
+    db.delete_permission_table()
+    db.create_table()
+    db.create_permissions_table()
     #db.add_permission("33", "hello.txt", "j154.txt", "r", "36")
     db.print_table()
 
+if __name__ == "__main__":
+    #reset_tables()
+    db = DataBaseFiles()
+    db.html_to_word("g74.txt", "madara.txt")
     a="""c.execute("DROP table if exists users")
     conn.commit()
     printing()"""

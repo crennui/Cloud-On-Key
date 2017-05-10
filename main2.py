@@ -1,13 +1,15 @@
 __author__ = 'Tamir'
+
 import random
+import os
 from flask import Flask
-from flask import send_file, render_template, request, url_for, Response, redirect, session, abort, g
-from flask_login import LoginManager, login_required, login_user, logout_user, login_url
+from flask import send_file, render_template, request, Response, redirect, session, send_from_directory
+from flask_login import LoginManager, login_required, login_user, logout_user
 from DataBaseUsers import *
 from DataBaseFiles import *
-from flask_socketio import SocketIO, emit, send
-import sqlite3
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_bcrypt import Bcrypt
+from io import BytesIO
 #from OpenSSL import SSL
 
 #context = SSL.Context(SSL.SSLv23_METHOD)
@@ -37,7 +39,11 @@ FILES_PATH = "files/"
 FILES_VIEW_PATH = "files_view.html"
 HOMEPAGE_PATH = "index.html"
 
+#-----------------------------SOCKET-ROUTS-----------------------------------------
+CREATE_FILE = "create_file"
+
 #-----------------------------CONSTANTS--------------------------------------------
+ERROR_404 = "HTTP/1.0 404 Not Found"
 ERROR_MSG = "Sorry your email or password are not correct"
 ERROR_MSG_ALREADY_USED = "This Email is already used"
 ERROR_MSG_LOGOUT = "you are logged out"
@@ -56,6 +62,11 @@ HTML_FILE_TEMPLATE = """ <a href="/file_request/%s">
                             <img src="static/document_file_icon_2.png">
                             <h3>%s</h3>
                             </div></a>"""
+USER_NAMESPACE = "user_namespace"
+#--------------------------------popup-messages----------------------------------------
+POPUP_MSG = 'popup-msg'
+ALREADY_USED = "The file name is already used !"
+DELETED = "The file %s deleted !"
 #----------------------------------------------------------------------------
 app = Flask(__name__)
 bcrypt = Bcrypt(app)
@@ -75,7 +86,7 @@ def homepage(user=None, var=random.randint(0, 1000)):
     return render_template(HOMEPAGE_PATH, user=user, var=var)
 
 #----------------------------------------------------------------------------
-
+app.config['UPLOAD_FOLDER'] = "files"
 # config
 app.config.update(
     DEBUG=False,
@@ -119,7 +130,9 @@ def login(var=random.randint(0, 1000), error=None):
         if data_base.authenticate(email, password):
             user = data_base.get_user_by_email(email)
             session[USER_ID] = user.get_id()
+            session[USER_NAMESPACE] = data_base.get_username_by_id(user.get_id())+"-"+user.get_id()
             login_user(user)
+
             return redirect(HOMEPAGE_ROUTE)
         else:
             return render_template(LOGIN_PAGE_PATH, error=ERROR_MSG)
@@ -168,18 +181,46 @@ def load_user(id):
 #--------------------------------FILES AND EDITOR-------------------------------------------
 
 
-@socket.on("create_file")
+@app.route('/download/<path:user_file_name>', methods=['GET', 'POST'])
+def download(user_file_name):
+    uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
+    file_name = data_base_files.user_to_server_file_name_owned(user_file_name, session[USER_ID])[0]
+    if not file_name:
+        file_name = data_base_files.user_to_server_file_name_not_owned(user_file_name, session[USER_ID])[0]
+    if file_name:
+        data_base_files.html_to_word(file_name, user_file_name)
+        new_file_name = user_file_name.split(".")[0]+".docx"
+        print new_file_name
+        return send_from_directory(directory=uploads, filename=new_file_name)
+    #else:
+     #   return ERROR_404
+
+
+@socket.on('download_file')
+def d_f(id):
+    id = id.replace(".txt", ".docx")
+    print id
+    return send_file("files/"+id, attachment_filename=id, as_attachment=True, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
+
+
+@app.route("/omg")
+def send_f():
+    return send_file("C:/CyberProjects/cloud_on_key/Cloud-On-Key/files/"+request.args.get("file_name"), attachment_filename=request.args.get("file_name"))
+
+
+@socket.on(CREATE_FILE)
 def create_file(file_name):
     if not file_name in data_base_files.get_user_files_list(session[USER_ID]):
         data_base_files.insert_file(session[USER_ID], file_name)
-        socket.emit('file_created', get_new_file_html_template(file_name))
+        socket.emit('file_created', get_new_file_html_template(file_name), room=session[USER_NAMESPACE])
     else:
-        socket.emit('already_used')
+        socket.emit(POPUP_MSG, ALREADY_USED)
     return OK
 
 
 def get_new_file_html_template(file_name):
     return HTML_FILE_TEMPLATE.replace("%s", file_name)
+
 
 @app.route(GET_IMAGE_ROUTE)
 def get_image(image_name=None):
@@ -239,6 +280,28 @@ def files(var=random.randint(0, 1000)):
     """
     files_list = data_base_files.get_user_files_list(session[USER_ID])
     return render_template(FILES_VIEW_PATH, var=var, files_list=files_list)
+
+
+@socket.on('Delete')
+def delete_file(file_name):
+    msg = DELETED % file_name
+    data_base_files.delete_file(user_to_server_file_name(file_name), session[USER_ID])
+    socket.emit('file-deleted', file_name)
+    socket.emit(POPUP_MSG, msg)
+    return OK
+
+
+@socket.on('joined')
+def joined():
+    room = session[USER_NAMESPACE]
+    print room
+    join_room(room)
+
+
+@socket.on('leave')
+def on_leave():
+    leave_room(session[USER_NAMESPACE])
+
 
 if __name__ == "__main__":
     socket.run(app, host="0.0.0.0")
