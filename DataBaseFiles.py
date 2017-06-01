@@ -7,8 +7,7 @@ import win32com.client
 import mammoth
 
 #------------------------------CONSTANTS---------------------------------------
-FILES_PATH = "D:/Cloud-On-Key/files/"
-UPLOADS = "C:/CyberProjects/cloud_on_key/Cloud-On-Key/uploads/"
+FILES_PATH = os.path.dirname(os.path.abspath(__file__))+"/files/"
 CREATE_PERMISSIONS = '''CREATE TABLE permissions
  (user_id TEXT, user_file_name TEXT ,server_file_name TEXT, permission_type TEXT, owner TEXT)'''
 #-------------------------------------------------------------------------
@@ -128,13 +127,14 @@ class DataBaseFiles():
     def html_to_word(self, server_file_name, user_file_name):
         word = win32com.client.Dispatch('Word.Application')
         doc = word.Documents.Add(FILES_PATH+server_file_name)
+        print FILES_PATH+user_file_name.split(".")[0]+'.docx'
         doc.SaveAs2(FILES_PATH+user_file_name.split(".")[0]+'.docx', FileFormat=12)
         doc.Close()
         word.Quit()
         return True
 
     def word_to_html(self, owner, new_file_name):
-        with open(UPLOADS+new_file_name, "rb") as docx_file:
+        with open(FILES_PATH+new_file_name, "rb") as docx_file:
             result = mammoth.convert_to_html(docx_file)
         html = result.value
         #messages = result.messages
@@ -157,8 +157,7 @@ def reset_tables():
 
 if __name__ == "__main__":
     #reset_tables()
-    db = DataBaseFiles()
-    db.html_to_word("g74.txt", "madara.txt")
+    #db.html_to_word("g74.txt", "madara.txt")
     a="""c.execute("DROP table if exists users")
     conn.commit()
     printing()"""

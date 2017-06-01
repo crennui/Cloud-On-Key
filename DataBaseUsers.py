@@ -1,7 +1,8 @@
 import sqlite3
 from print_sqlite2 import *
 from User import *
-
+import random
+import string
 #http://stackoverflow.com/questions/13709482/how-to-read-text-file-in-javascript
 
 
@@ -13,7 +14,7 @@ class DataBaseUsers():
 
     def create_table(self):
         try:
-            self.c.execute('''CREATE TABLE users(name text, hash_pass text, email text, id text)''')
+            self.c.execute('''CREATE TABLE users(name text, hash_pass text, email text, id text, key text, second_pass text)''')
             return True
         except Exception:
             return False
@@ -30,8 +31,17 @@ class DataBaseUsers():
         self.c.execute('SELECT * FROM users WHERE email=?', t)
         if self.c.fetchone():
             return "Sorry but this email is already used"
-        self.c.execute("INSERT INTO users VALUES (?,?,?,?)", (name, hash_pass, email, id))
+        key = self.generate_key()
+        second_pass = self.generate_key()
+        self.c.execute("INSERT INTO users VALUES (?,?,?,?,?,?)", (name, hash_pass, email, id, key, second_pass))
         self.conn.commit()
+
+    def generate_key(self):
+        master = string.ascii_letters+string.digits
+        password = ""
+        for i in range(0, 32):
+            password += random.choice(master)
+        return password
 
     def print_table(self):
         self.c.execute("SELECT * FROM users")
@@ -75,12 +85,31 @@ class DataBaseUsers():
         if username:
             return username[0]
 
+    def get_key_by_email(self, email):
+        t = (email, )
+        return self.c.execute("SELECT key FROM users WHERE email=?", t).fetchone()
+
+    def check_authentication(self, email, second_pass):
+        self.c.execute("SELECT * FROM users WHERE email=? AND second_pass=?", (email, second_pass))
+        if self.c.fetchone():
+            return True
+        return False
+
+    def change_key(self, email):
+        t = (email, )
+        if self.c.execute("SELECT * FROM users WHERE email=?", t).fetchone():
+            new_key = self.generate_key()
+            t = (new_key, email)
+            self.c.execute("UPDATE users SET key=?  WHERE email=?", t)
+            self.conn.commit()
+            return new_key
+        return False
+
 if __name__ == "__main__":
     db = DataBaseUsers()
-    b= """
     db.delete_table()
     db.create_table()
-    db.insert_user(User("Tamir", "1234", "cren@g", "33"))"""
+    db.insert_user(User("Tamir", "1234", "cren@g", "1"))
     db.print_table()
 
     a="""c.execute("DROP table if exists users")

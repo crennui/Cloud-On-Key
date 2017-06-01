@@ -223,6 +223,7 @@ socket.on('message',function(msg){
 	if (new String(link.getAttribute("data-action")).valueOf()== new String(("download_file")).valueOf())
 	  {
 		 var win = window.open("http://127.0.0.1:5000/download?file_name="+idOfImg, '_blank');
+		 console.log("open new")
 	  }
 	  else{socket.emit(link.getAttribute("data-action"),idOfImg);}
 	  toggleMenuOff();

@@ -17,8 +17,8 @@ tinymce.init({
 	skin: "lightgray",
 	
 	/* width and height of the editor */
-	width: "65%",
-	height: 700,
+	width: "45%",
+	height: 800,
 	
 	/* display statusbar */
 	statubar: true,

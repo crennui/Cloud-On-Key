@@ -3,18 +3,19 @@ __author__ = 'Tamir'
 import random
 import os
 from flask import Flask
-from flask import send_file, render_template, request, Response, redirect, session, send_from_directory
+from flask import send_file, render_template, request, Response, redirect, session, send_from_directory, g
 from flask_login import LoginManager, login_required, login_user, logout_user
 from DataBaseUsers import *
 from DataBaseFiles import *
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_bcrypt import Bcrypt
-from io import BytesIO
-#from OpenSSL import SSL
+from OpenSSL import SSL
 
-#context = SSL.Context(SSL.SSLv23_METHOD)
-#context.use_privatekey_file('yourserver.key')
-#context.use_certificate_file('yourserver.crt')
+context = SSL.Context(SSL.SSLv23_METHOD)
+cer = os.path.join(os.path.dirname(__file__), 'static/cert.pem')
+key = os.path.join(os.path.dirname(__file__), 'static/key.pem')
+
+
 
 data_base = DataBaseUsers()
 data_base_files = DataBaseFiles()
@@ -76,6 +77,7 @@ socket = SocketIO(app)
 #----------------------------------------------------------------------------
 rooms = {}
 
+clients_connecting = {}
 
 @app.route(HOMEPAGE_ROUTE)
 @login_required
@@ -83,7 +85,7 @@ def homepage(user=None, var=random.randint(0, 1000)):
     """
     The function returns the homepage html template.
     """
-    return render_template(HOMEPAGE_PATH, user=user, var=var)
+    return files()
 
 #----------------------------------------------------------------------------
 app.config['UPLOAD_FOLDER'] = "files"
@@ -124,16 +126,28 @@ def login(var=random.randint(0, 1000), error=None):
     if the request is GET: returns the html login_page template
     if the request is POST: checks the data(email and password) in the users database.
     """
+    global clients_connecting
     if request.method == METHOD_POST:
         email = request.form[EMAIL]
         password = request.form[PASSWORD]
         if data_base.authenticate(email, password):
+            print "yesss"
             user = data_base.get_user_by_email(email)
             session[USER_ID] = user.get_id()
             session[USER_NAMESPACE] = data_base.get_username_by_id(user.get_id())+"-"+user.get_id()
-            login_user(user)
-
-            return redirect(HOMEPAGE_ROUTE)
+            print request.remote_addr
+            print clients_connecting
+            if email in clients_connecting.keys() and clients_connecting[email] == request.remote_addr:
+                login_user(user)
+                print "logged in"
+                print clients_connecting
+                print request.remote_addr
+                del clients_connecting[email]
+                print clients_connecting
+                email = ""
+                return redirect(HOMEPAGE_ROUTE)
+            else:
+                return render_template(LOGIN_PAGE_PATH, error=ERROR_MSG)
         else:
             return render_template(LOGIN_PAGE_PATH, error=ERROR_MSG)
     else:
@@ -180,44 +194,8 @@ def load_user(id):
 
 #--------------------------------FILES AND EDITOR-------------------------------------------
 
-
-@socket.on('download_file')
-def download_file(file_name):
-    new_file_name = file_name.replace(".txt", ".docx")
-    print new_file_name
-    uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
-    print uploads
-    return send_from_directory(uploads, new_file_name, as_attachment=True)
-    #return send_file("files/"+id, attachment_filename=id, as_attachment=True, mimetype="application/vnd.openxmlformats-officedocument.wordprocessingml.document")
-
-
-@socket.on('down_img')
-def down(file_name):
-    uploads = os.path.join(app.root_path, "static")
-    print "madaraaaaaaa"
-    #return send_from_directory(uploads, file_name, as_attachment=True)
-    return redirect("/down_img/"+file_name)
-
-
-@app.route("/down_img/<file_name>")
-def send_img(file_name):
-    uploads = os.path.join(app.root_path, "static")
-    return send_from_directory(uploads, file_name, as_attachment=True)
-
-
-@app.route("/omg")
-def send_f():
-    print "blaaaaaaa"
-    uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
-    new_file_name = request.args.get("file_name")
-    print new_file_name
-    print uploads
-    return send_from_directory(uploads, request.args.get("file_name"))
-
-
 @app.route('/download', methods=['GET', 'POST'])
 def download():
-    print "kakakakakakakkaakakak"
     uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
     print uploads
     user_file_name = request.args.get("file_name")
@@ -228,10 +206,9 @@ def download():
         data_base_files.html_to_word(file_name, user_file_name)
         new_file_name = user_file_name.split(".")[0]+".docx"
         print new_file_name
-        #return render_template(HOMEPAGE_PATH)
         return send_from_directory(directory=uploads, filename=new_file_name)
-    #else:
-     #   return ERROR_404
+    else:
+        return ERROR_404
 
 
 @socket.on(CREATE_FILE)
@@ -328,10 +305,29 @@ def on_leave():
     leave_room(session[USER_NAMESPACE])
 
 
-if __name__ == "__main__":
-    socket.run(app, host="0.0.0.0")
+@app.route("/login_key", methods=['POST', 'GET'])
+def login_key():
+    user_email = request.data
+    print user_email
+    password_key = data_base.get_key_by_email(user_email)
+    return password_key
 
-#ssl_context=context
+
+@app.route('/secret_password', methods=['POST', 'GET'])
+def secret_password():
+    global clients_connecting
+    params = request.data.split(" ")
+    print params
+    if data_base.check_authentication(params[0], params[1]): #email + second_pass
+        clients_connecting[params[0]] = request.remote_addr
+    return data_base.change_key(params[0])
+
+
+if __name__ == "__main__":
+    context = (cer, key)
+    socket.run(app, host="0.0.0.0", ssl_context=context, debug=True, logger=True)
+
+
 
 
 

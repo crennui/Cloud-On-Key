@@ -13,12 +13,6 @@ socket.on('update', function(data_update){
 tinyMCE.get('texteditor').setContent(data_update);
 	});
 
-socket.on('file_created',function(new_file){
-	console.log("created file");
-	$("#files-view").append(new_file);
-	console.log(new_file);
-});
-
 function getFileName(){
 	var file_name = prompt("Please enter the name of the new file","example: new_file.txt");
     
@@ -26,6 +20,12 @@ function getFileName(){
        socket.emit("create_file",file_name);
     }
 }
+
+socket.on('file_created',function(new_file){
+	console.log("created file");
+	$("#files-view").append(new_file);
+	console.log(new_file);
+});
 
 socket.on('popup-msg', function(msg){
 	document.getElementById("myPopup").innerHTML = msg;
