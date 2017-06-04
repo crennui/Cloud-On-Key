@@ -8,14 +8,6 @@ from flask_login import LoginManager, login_required, login_user, logout_user
 from DataBaseUsers import *
 from DataBaseFiles import *
 from flask_socketio import SocketIO, emit, join_room, leave_room
-from flask_bcrypt import Bcrypt
-from OpenSSL import SSL
-
-context = SSL.Context(SSL.SSLv23_METHOD)
-cer = os.path.join(os.path.dirname(__file__), 'static/cert.pem')
-key = os.path.join(os.path.dirname(__file__), 'static/key.pem')
-
-
 
 data_base = DataBaseUsers()
 data_base_files = DataBaseFiles()
@@ -70,30 +62,25 @@ ALREADY_USED = "The file name is already used !"
 DELETED = "The file %s deleted !"
 #----------------------------------------------------------------------------
 app = Flask(__name__)
-bcrypt = Bcrypt(app)
 #-------------------------------------SocketIO----------------------------------
-app.config['SECRET_KEY'] = SECRET_KEY
+#app.config['SECRET_KEY'] = SECRET_KEY
 socket = SocketIO(app)
 #----------------------------------------------------------------------------
 rooms = {}
-
 clients_connecting = {}
 
+
 @app.route(HOMEPAGE_ROUTE)
-@login_required
-def homepage(user=None, var=random.randint(0, 1000)):
+def homepage(var=random.randint(0, 1000)):
     """
     The function returns the homepage html template.
     """
-    return files()
+    return render_template("index.html", var=var)
 
 #----------------------------------------------------------------------------
 app.config['UPLOAD_FOLDER'] = "files"
 # config
-app.config.update(
-    DEBUG=False,
-    SECRET_KEY=SECRET_KEY
-)
+app.config.update(DEBUG=True, SECRET_KEY=SECRET_KEY)
 
 # flask-login
 login_manager = LoginManager()
@@ -139,9 +126,6 @@ def login(var=random.randint(0, 1000), error=None):
             print clients_connecting
             if email in clients_connecting.keys() and clients_connecting[email] == request.remote_addr:
                 login_user(user)
-                print "logged in"
-                print clients_connecting
-                print request.remote_addr
                 del clients_connecting[email]
                 print clients_connecting
                 email = ""
@@ -177,6 +161,8 @@ def register(var=random.randint(0, 1000)):
     else:
         new_user = User(name, password, email, generate_user_id())
         data_base.insert_user(new_user)
+        login_user(new_user)
+        return files()
     return render_template(LOGIN_PAGE_PATH, var=var, error=error)
 
 
@@ -193,6 +179,7 @@ def load_user(id):
     return data_base.get_user_by_id(id)
 
 #--------------------------------FILES AND EDITOR-------------------------------------------
+
 
 @app.route('/download', methods=['GET', 'POST'])
 def download():
@@ -324,8 +311,9 @@ def secret_password():
 
 
 if __name__ == "__main__":
-    context = (cer, key)
-    socket.run(app, host="0.0.0.0", ssl_context=context, debug=True, logger=True)
+    key = 'C:/CyberProjects/cloud_on_key/Cloud-On-Key/static/key.pem'
+    cert = 'C:/CyberProjects/cloud_on_key/Cloud-On-Key/static/cert.pem'
+    socket.run(app, host="0.0.0.0", debug=True, keyfile=key, certfile=cert)
 
 
 
