@@ -16,7 +16,7 @@ CREATE_PERMISSIONS = '''CREATE TABLE permissions
 class DataBaseFiles():
     def __init__(self):
         self.table_path = "users/files.db"
-        self.conn = sqlite3.connect(self.table_path)
+        self.conn = sqlite3.connect(self.table_path, check_same_thread=False)
         self.c = self.conn.cursor()
 
     def create_table(self):

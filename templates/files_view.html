@@ -30,9 +30,10 @@
       <center>
           <div id="top-images">
     <img id ="create-file" src="/static/create_file2.png" onclick="getFileName()" height="64" width="64" alt="add new file">
-              <form action="/action_page.php">
-                <input type="file" name="pic" accept="image/*">
-                <input type="image" src="static/upload-file.png">
+              <form action="/file_upload">
+                <input type="image" src="http://upload.wikimedia.org/wikipedia/commons/c/ca/Button-Lightblue.svg" width="64px" height="64px"/>
+                <input type="file" id="my_file" style="display: none;" />
+                <input type="submit">
               </form>
               <a href="/static/key-info.png" download><img id="download-key" src="static/key-info.png"></a>
           </div>

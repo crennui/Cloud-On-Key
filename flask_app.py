@@ -311,8 +311,8 @@ def secret_password():
 
 
 if __name__ == "__main__":
-    key = 'C:/CyberProjects/cloud_on_key/Cloud-On-Key/static/key.pem'
-    cert = 'C:/CyberProjects/cloud_on_key/Cloud-On-Key/static/cert.pem'
+    key = os.path.dirname(os.path.abspath(__file__))+'/static/key.pem'
+    cert = os.path.dirname(os.path.abspath(__file__))+'/static/cert.pem'
     socket.run(app, host="0.0.0.0", debug=True, keyfile=key, certfile=cert)
 
 

@@ -6,3 +6,7 @@
        $.get("/create_file",{name:file_name})
     }
 } */
+
+$("input[type='image']").click(function() {
+    $("input[id='my_file']").click();
+});

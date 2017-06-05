@@ -9,7 +9,7 @@ import string
 class DataBaseUsers():
     def __init__(self):
         self.table_path = "users/users.db"
-        self.conn = sqlite3.connect(self.table_path)
+        self.conn = sqlite3.connect(self.table_path, check_same_thread=False)
         self.c = self.conn.cursor()
 
     def create_table(self):
@@ -87,7 +87,10 @@ class DataBaseUsers():
 
     def get_key_by_email(self, email):
         t = (email, )
-        return self.c.execute("SELECT key FROM users WHERE email=?", t).fetchone()
+        self.c.execute("SELECT key FROM users WHERE email=?", t)
+        key = self.c.fetchone()
+        print key
+        return key
 
     def check_authentication(self, email, second_pass):
         self.c.execute("SELECT * FROM users WHERE email=? AND second_pass=?", (email, second_pass))

@@ -97,7 +97,7 @@ def decrypt_file(key, in_filename, out_filename=None, chunksize=24*1024):
             outfile.truncate(origsize)
 
 
-conn = httplib.HTTPConnection("127.0.0.1:5000")
+conn = httplib.HTTPSConnection("127.0.0.1:5000")
 email = gui_get_email('Welcome to Cloud on key. please enter your Email')
 conn.request("POST", "/login_key", email)
 r1 = conn.getresponse()
@@ -114,4 +114,4 @@ data2 = r2.read()
 encrypt_file(data2, "second_password.txt")
 os.remove("second_password.txt")
 conn.close()
-webbrowser.open_new_tab("http://127.0.0.1:5000/")
+webbrowser.open_new_tab("https://127.0.0.1:5000/login")
