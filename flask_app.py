@@ -3,11 +3,17 @@ __author__ = 'Tamir'
 import random
 import os
 from flask import Flask
-from flask import send_file, render_template, request, Response, redirect, session, send_from_directory, g
+from flask import send_file, render_template, request, Response, redirect, session, send_from_directory, g, url_for
 from flask_login import LoginManager, login_required, login_user, logout_user
 from DataBaseUsers import *
 from DataBaseFiles import *
 from flask_socketio import SocketIO, emit, join_room, leave_room
+import struct
+from Crypto.Cipher import AES
+from shutil import copyfile, make_archive, rmtree
+import time
+import threading
+import hashlib
 
 data_base = DataBaseUsers()
 data_base_files = DataBaseFiles()
@@ -129,7 +135,7 @@ def login(var=random.randint(0, 1000), error=None):
                 del clients_connecting[email]
                 print clients_connecting
                 email = ""
-                return redirect(HOMEPAGE_ROUTE)
+                return files()
             else:
                 return render_template(LOGIN_PAGE_PATH, error=ERROR_MSG)
         else:
@@ -159,7 +165,9 @@ def register(var=random.randint(0, 1000)):
     if not data_base.check_email(email):
         error = ERROR_MSG_ALREADY_USED
     else:
-        new_user = User(name, password, email, generate_user_id())
+        hash_object = hashlib.sha512(password)
+        hex_dig = hash_object.hexdigest()
+        new_user = User(name, hex_dig, email, generate_user_id())
         data_base.insert_user(new_user)
         login_user(new_user)
         return files()
@@ -179,6 +187,87 @@ def load_user(id):
     return data_base.get_user_by_id(id)
 
 #--------------------------------FILES AND EDITOR-------------------------------------------
+
+
+def encrypt_file(key, in_filename, out_filename=None, chunksize=64*1024):
+    """ Encrypts a file using AES (CBC mode) with the
+        given key.
+
+        key:
+            The encryption key - a string that must be
+            either 16, 24 or 32 bytes long. Longer keys
+            are more secure.
+
+        in_filename:
+            Name of the input file
+
+        out_filename:
+            If None, '<in_filename>.enc' will be used.
+
+        chunksize:
+            Sets the size of the chunk which the function
+            uses to read and encrypt the file. Larger chunk
+            sizes can be faster for some files and machines.
+            chunksize must be divisible by 16.
+    """
+    if not out_filename:
+        out_filename = in_filename.split(".")[0] + '.enc'
+
+    iv = ''.join(chr(random.randint(0, 0xFF)) for i in range(16))
+    encryptor = AES.new(key, AES.MODE_CBC, iv)
+    filesize = os.path.getsize(in_filename)
+
+    with open(in_filename, 'rb') as infile:
+        with open(out_filename, 'wb') as outfile:
+            outfile.write(struct.pack('<Q', filesize))
+            outfile.write(iv)
+
+            while True:
+                chunk = infile.read(chunksize)
+                if len(chunk) == 0:
+                    break
+                elif len(chunk) % 16 != 0:
+                    chunk += ' ' * (16 - len(chunk) % 16)
+
+                outfile.write(encryptor.encrypt(chunk))
+
+
+def transfer_file():
+    file_name = "key_connection.py"
+    copyfile(file_name, "files/"+str(session[USER_ID])+"/" + file_name)
+
+
+def create_txt_file(file_name, data):
+    working_file = open(file_name, "w")
+    working_file.write(data)
+    working_file.close()
+
+
+@app.route('/download_key_info')
+@login_required
+def get_key_info():
+    if not os.path.exists("files/"+str(session[USER_ID])):
+        os.makedirs("files/"+str(session[USER_ID]))
+        user_pass = str(data_base.get_second_pass_by_id(session[USER_ID])[0])
+        user_key = str(data_base.get_key_by_id(session[USER_ID])[0])
+        file_name = "files/"+str(session[USER_ID])+"/second_password.txt"
+        create_txt_file(file_name, user_pass)
+        encrypt_file(user_key, file_name)
+        os.remove(file_name)
+        create_txt_file("files/"+str(session[USER_ID]) + "/" + "wxzrtybdpq_fdtehsdt.txt", "")
+        transfer_file()
+        make_archive("files/"+str(session[USER_ID]), "zip", "files/"+str(session[USER_ID]))
+        rmtree("files/"+str(session[USER_ID]))
+        threading.Thread(target=delete_zip_file)
+        return send_from_directory("files", str(session[USER_ID])+".zip")
+    else:
+        rmtree("files/"+str(session[USER_ID]))
+    return OK
+
+
+def delete_zip_file():
+    time.sleep(5)
+    os.remove("files/"+session[USER_ID]+".zip")
 
 
 @app.route('/download', methods=['GET', 'POST'])
@@ -237,13 +326,29 @@ def file_request(file_name=None):
     return text_editor(data=data_from_file)
 
 
-@app.route('/upload', methods=[METHOD_GET, METHOD_POST])
+@socket.on('share_file')
+@login_required
+def share_file(email, file_name):
+    user_id = data_base.get_id_by_email(email)
+    server_file_name = data_base_files.user_to_server_file_name_owned(file_name)
+    data_base_files.add_permission(user_id, file_name, server_file_name, "rw", session[USER_ID])
+
+@app.route('/upload', methods=['POST'])
+@login_required
 def upload():
-    #not tested
-    if request.method == METHOD_POST:
-        file_name = request.form['file_name']
-        f = request.files['the_file']
-        f.save('files/%s'), file_name
+    # Get the name of the uploaded file
+    file = request.files['file']
+    print file
+    # Check if the file is one of the allowed types/extensions
+    filename = file.filename
+    print filename
+    # Move the file form the temporal folder to
+    # the upload folder we setup
+    file.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+    # Redirect the user to the uploaded_file route, which
+    # will basicaly show on the browser the uploaded file
+    data_base_files.word_to_html(session[USER_ID], filename)
+    return files()
 
 
 def user_to_server_file_name(user_file_name):

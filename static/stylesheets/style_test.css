@@ -433,19 +433,43 @@ footer  nav ul li a{
 	color: #fff;
 }
 
+#upload-file{
+	margin-top: 30px;
+	transition: all 150ms ease-in-out;
+	-webkit-transition: all 150ms ease-in-out;
+	-o-transition: all 150ms ease-in-out;
+}
+#upload-file:hover{
+	width:82px;
+	height:82px;
+}
 #create-file{
 	margin-top: 30px;
-	transition: all 200ms ease-in-out;
-	-webkit-transition: all 200ms ease-in-out;
-	-o-transition: all 200ms ease-in-out;
+	transition: all 150ms ease-in-out;
+	-webkit-transition: all 150ms ease-in-out;
+	-o-transition: all 150ms ease-in-out;
 }
 #create-file:hover{
 	width:82px;
 	height:82px;
 }
+.image-upload > input
+{
+    display: none;
+}
+#download-key{
+	margin-top: 30px;
+	transition: all 150ms ease-in-out;
+	-webkit-transition: all 150ms ease-in-out;
+	-o-transition: all 150ms ease-in-out;
+}
+#download-key:hover{
+	width:82px;
+	height:82px;
+}
 
 #top-images {
-	
+
 }
 .popup {
 	

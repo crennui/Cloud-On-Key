@@ -29,13 +29,12 @@
   <div class="wrapper">
       <center>
           <div id="top-images">
-    <img id ="create-file" src="/static/create_file2.png" onclick="getFileName()" height="64" width="64" alt="add new file">
-              <form action="/file_upload">
-                <input type="image" src="http://upload.wikimedia.org/wikipedia/commons/c/ca/Button-Lightblue.svg" width="64px" height="64px"/>
-                <input type="file" id="my_file" style="display: none;" />
-                <input type="submit">
-              </form>
-              <a href="/static/key-info.png" download><img id="download-key" src="static/key-info.png"></a>
+    <img id ="create-file" src="/static/create_file2.png" onclick="getFileName()" height="75" width="75" alt="add new file">
+    <img id="download-key" src="static/key-info.png" height="75" width="75" onclick="downloadKeyInfo()">
+    <form action="upload" method="post" enctype="multipart/form-data">
+        <input type="file" name="file">
+        <input type="submit" value="Upload">
+    </form>
           </div>
      <div class="popup">
        <span class="popuptext" id="myPopup"></span>

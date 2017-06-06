@@ -1,6 +1,13 @@
 socket.on('message',function(msg){
 	console.log(msg);
 });
+
+function getEmail(file_name){
+	var email = prompt("Please enter the email of the person you want to share this file with","example: daniel@gmail.com");
+    if (email != null) {
+       socket.emit("share_file",email,file_name);
+    }
+}
 (function() {
   
   "use strict";
@@ -222,9 +229,13 @@ socket.on('message',function(msg){
 	console.log(link.getAttribute("data-action"));
 	if (new String(link.getAttribute("data-action")).valueOf()== new String(("download_file")).valueOf())
 	  {
-		 var win = window.open("http://127.0.0.1:5000/download?file_name="+idOfImg, '_blank');
+		 var win = window.open("https://127.0.0.1:5000/download?file_name="+idOfImg, '_blank');
 		 console.log("open new")
 	  }
+	 else if (new String(link.getAttribute("data-action")).valueOf()== new String(("Share")).valueOf())
+	 { 
+		getEmail(idOfImg);
+	 }
 	  else{socket.emit(link.getAttribute("data-action"),idOfImg);}
 	  toggleMenuOff();
   }

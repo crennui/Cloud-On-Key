@@ -3,6 +3,7 @@ from print_sqlite2 import *
 from User import *
 import random
 import string
+import hashlib
 #http://stackoverflow.com/questions/13709482/how-to-read-text-file-in-javascript
 
 
@@ -48,6 +49,10 @@ class DataBaseUsers():
         data = self.c.fetchall()
         print data
 
+    def get_id_by_email(self, email):
+        t = (email,)
+        return self.c.execute("SELECT id FROM users WHERE email=?", t).fetchone()[0]
+
     def delete_table(self):
         self.c.execute("DROP table if exists users")
         self.conn.commit()
@@ -56,7 +61,9 @@ class DataBaseUsers():
         pass
 
     def authenticate(self, email, password):
-        self.c.execute("SELECT * FROM users WHERE hash_pass=? AND email=?", (password, email))
+        hash_object = hashlib.sha512(password)
+        hex_dig = hash_object.hexdigest()
+        self.c.execute("SELECT * FROM users WHERE hash_pass=? AND email=?", (hex_dig, email))
         if self.c.fetchone():
             return True
         return False
@@ -107,6 +114,14 @@ class DataBaseUsers():
             self.conn.commit()
             return new_key
         return False
+
+    def get_second_pass_by_id(self, id):
+        t = (id, )
+        return self.c.execute('SELECT second_pass FROM users WHERE id=?', t).fetchone()
+
+    def get_key_by_id(self, id):
+        t = (id, )
+        return self.c.execute('SELECT key FROM users WHERE id=?', t).fetchone()
 
 if __name__ == "__main__":
     db = DataBaseUsers()

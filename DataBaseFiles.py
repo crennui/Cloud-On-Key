@@ -138,11 +138,8 @@ class DataBaseFiles():
             result = mammoth.convert_to_html(docx_file)
         html = result.value
         #messages = result.messages
-        end_with = ".txt"
-        file_end = new_file_name.split(".")[1]
-        if file_end != ".docx":
-            end_with = file_end
-        self.insert_file(owner, new_file_name.split(".")[0]+end_with)
+        self.insert_file(owner, new_file_name.replace(".docx", ".txt"), html)
+        os.remove("files/"+new_file_name)
         print html
 
 
