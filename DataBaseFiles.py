@@ -3,6 +3,7 @@ import random
 import sqlite3
 from string import letters
 import os
+import pythoncom
 import win32com.client
 import mammoth
 
@@ -118,13 +119,18 @@ class DataBaseFiles():
 
     def user_to_server_file_name_owned(self, user_file_name, user_id):
         t = (user_file_name, user_id)
-        return self.c.execute("SELECT server_file_name FROM files WHERE user_file_name=? AND owner=?", t).fetchone()
+        k = self.c.execute("SELECT server_file_name FROM files WHERE user_file_name=? AND owner=?", t).fetchone()
+        print k
+        return k
 
     def user_to_server_file_name_not_owned(self, user_file_name, user_id):
         t = (user_file_name, user_id)
-        return self.c.execute("SELECT server_file_name FROM permissions WHERE user_file_name=? AND user_id=?", t).fetchone()
+        k = self.c.execute("SELECT server_file_name FROM permissions WHERE user_file_name=? AND user_id=?", t).fetchone()
+        print str(k[0]) + "premmmmmm"
+        return k
 
     def html_to_word(self, server_file_name, user_file_name):
+        pythoncom.CoInitialize()
         word = win32com.client.Dispatch('Word.Application')
         doc = word.Documents.Add(FILES_PATH+server_file_name)
         print FILES_PATH+user_file_name.split(".")[0]+'.docx'
@@ -155,6 +161,9 @@ def reset_tables():
 if __name__ == "__main__":
     #reset_tables()
     #db.html_to_word("g74.txt", "madara.txt")
+    db = DataBaseFiles()
+    db.delete_permission_table()
+    db.create_permissions_table()
     a="""c.execute("DROP table if exists users")
     conn.commit()
     printing()"""

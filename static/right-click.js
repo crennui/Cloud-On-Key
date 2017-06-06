@@ -229,8 +229,8 @@ function getEmail(file_name){
 	console.log(link.getAttribute("data-action"));
 	if (new String(link.getAttribute("data-action")).valueOf()== new String(("download_file")).valueOf())
 	  {
-		 var win = window.open("https://127.0.0.1:5000/download?file_name="+idOfImg, '_blank');
-		 console.log("open new")
+		 var win = window.open("https://192.168.1.157:5000/download?file_name="+idOfImg, '_blank');
+		 console.log("open new");
 	  }
 	 else if (new String(link.getAttribute("data-action")).valueOf()== new String(("Share")).valueOf())
 	 { 

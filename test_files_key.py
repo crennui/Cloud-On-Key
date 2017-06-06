@@ -92,4 +92,6 @@ def make_dir():
     working_file.write("hello")
     working_file.close()
     encrypt_file()
-make_dir()
+
+def test_com():
+    import c

@@ -15,6 +15,7 @@ import time
 import threading
 import hashlib
 
+
 data_base = DataBaseUsers()
 data_base_files = DataBaseFiles()
 OK = "OK - 200"
@@ -238,9 +239,9 @@ def transfer_file():
 
 
 def create_txt_file(file_name, data):
-    working_file = open(file_name, "w")
-    working_file.write(data)
-    working_file.close()
+    working_file_txt = open(file_name, "w")
+    working_file_txt.write(data)
+    working_file_txt.close()
 
 
 @app.route('/download_key_info')
@@ -275,10 +276,13 @@ def download():
     uploads = os.path.join(app.root_path, app.config['UPLOAD_FOLDER'])
     print uploads
     user_file_name = request.args.get("file_name")
-    file_name = data_base_files.user_to_server_file_name_owned(user_file_name, session[USER_ID])[0]
+    file_name = data_base_files.user_to_server_file_name_owned(user_file_name, session[USER_ID])
     if not file_name:
-        file_name = data_base_files.user_to_server_file_name_not_owned(user_file_name, session[USER_ID])[0]
+        file_name = data_base_files.user_to_server_file_name_not_owned(user_file_name, session[USER_ID])
+        print file_name
     if file_name:
+        file_name = file_name[0]
+        print user_file_name + " " + file_name
         data_base_files.html_to_word(file_name, user_file_name)
         new_file_name = user_file_name.split(".")[0]+".docx"
         print new_file_name
@@ -320,9 +324,10 @@ def text_editor(data="", var=random.randint(0, 1000)):
 
 @app.route(FILE_REQUEST_ROUTE)
 @login_required
-def file_request(file_name=None):
+def file_request(file_name):
     session[WORKING_FILE] = user_to_server_file_name(file_name)
-    data_from_file = open(FILES_PATH+session[WORKING_FILE], READ_B_ACTION).read()
+    print session[WORKING_FILE] + " " + "this is!!!!!"
+    data_from_file = open(FILES_PATH+str(session[WORKING_FILE]), READ_B_ACTION).read()
     return text_editor(data=data_from_file)
 
 
@@ -330,8 +335,10 @@ def file_request(file_name=None):
 @login_required
 def share_file(email, file_name):
     user_id = data_base.get_id_by_email(email)
-    server_file_name = data_base_files.user_to_server_file_name_owned(file_name)
+    print session[USER_ID]
+    server_file_name = data_base_files.user_to_server_file_name_owned(file_name, session[USER_ID])[0]
     data_base_files.add_permission(user_id, file_name, server_file_name, "rw", session[USER_ID])
+
 
 @app.route('/upload', methods=['POST'])
 @login_required
@@ -359,7 +366,9 @@ def user_to_server_file_name(user_file_name):
     if server_file_name:
         return server_file_name[0]
     else:
-        return data_base_files.user_to_server_file_name_not_owned(user_file_name, session["user_id"])[0]
+        server_file_name = data_base_files.user_to_server_file_name_not_owned(user_file_name, session["user_id"])[0]
+        print server_file_name
+        return server_file_name
 
 
 def generate_user_id():
